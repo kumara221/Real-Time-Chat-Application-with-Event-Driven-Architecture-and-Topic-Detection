@@ -4,6 +4,12 @@ import time
 import json
 from sentiment import is_sentiment
 
+# Constants for HiveMQ and Mosquitto
+BROKERS = {
+    "hivemq": {"url": "broker.hivemq.com", "port": 1883},
+    "mosquitto": {"url": "test.mosquitto.org", "port": 1883}
+}
+
 # Function to detect negative sentiment
 def is_sentiment(message):
     negative_keywords = [
@@ -69,8 +75,12 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-# Connect to local broker (localhost)
-client.connect("localhost", 1883, 60)
+# Choose broker: "hivemq" or "mosquitto"
+broker_choice = "mosquitto"  
+broker = BROKERS[broker_choice]
+
+# Connect to the chosen broker
+client.connect(broker["url"], broker["port"], 60)
 
 # Start the loop to listen for messages
 client.loop_forever()
