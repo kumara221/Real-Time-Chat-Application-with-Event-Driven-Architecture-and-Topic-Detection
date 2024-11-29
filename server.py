@@ -5,8 +5,6 @@ import json
 from sentiment import is_sentiment
 
 # Function to detect negative sentiment
-
-
 def is_sentiment(message):
     negative_keywords = [
         "idiot", "stupid", "loser", "dumb", "moron", "asshole", "jerk", "bastard", "dick",
