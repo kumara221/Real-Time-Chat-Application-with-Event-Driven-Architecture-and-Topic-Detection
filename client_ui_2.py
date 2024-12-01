@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 import time
 import json
+from const import BROKERS
 
 
 class MQTTClientApp:
@@ -74,7 +75,9 @@ class MQTTClientApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
+    broker_choice = "mosquitto"
+    broker = BROKERS[broker_choice]
     app = MQTTClientApp(root, client_name="Klien 2",
-                        broker='localhost', port=1883)
+                        broker=broker['url'], port=1883)
     root.protocol("WM_DELETE_WINDOW", app.close)
     root.mainloop()

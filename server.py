@@ -3,28 +3,7 @@ import re
 import time
 import json
 from sentiment import is_sentiment
-
-# Constants for HiveMQ and Mosquitto
-BROKERS = {
-    "hivemq": {"url": "broker.hivemq.com", "port": 1883},
-    "mosquitto": {"url": "test.mosquitto.org", "port": 1883}
-}
-
-# Function to detect negative sentiment
-def is_sentiment(message):
-    negative_keywords = [
-        "idiot", "stupid", "loser", "dumb", "moron", "asshole", "jerk", "bastard", "dick",
-        "crap", "freak", "bitch", "shithead", "damn", "fuck", "bodoh", "tolol", "goblok",
-        "bangsat", "anjing", "kampret", "bajingan", "setan", "tai",
-        "bego", "keparat", "brengsek", "sialan"
-    ]
-    clean_message = re.sub(r'\W', ' ', message.lower())
-
-    # Check if any negative keyword is present
-    if any(word in clean_message for word in negative_keywords):
-        return "negative"
-    else:
-        return "positive"
+from const import BROKERS
 
 
 def on_connect(client, userdata, flags, rc):
@@ -63,7 +42,7 @@ def on_message(client, userdata, msg):
 
         if sentiment_result == 'negative':
             new_message = re.sub(r'(?<=: ).+', lambda m: '*' *
-                                 len(m.group()), message)
+                                 len(m.group()), content)
             relayed_message = f"{new_message} | Sentiment: {sentiment_response}"
             client.publish("chat/response", relayed_message)
         else:
@@ -76,7 +55,7 @@ client.on_connect = on_connect
 client.on_message = on_message
 
 # Choose broker: "hivemq" or "mosquitto"
-broker_choice = "mosquitto"  
+broker_choice = "mosquitto"
 broker = BROKERS[broker_choice]
 
 # Connect to the chosen broker

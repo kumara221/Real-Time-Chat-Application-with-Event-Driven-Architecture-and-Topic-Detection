@@ -1,15 +1,13 @@
 from transformers import pipeline
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def is_sentiment(text):
-    tokenizer = AutoTokenizer.from_pretrained(
-        "ayameRushia/bert-base-indonesian-1.5G-sentiment-analysis-smsa")
-    model = AutoModelForSequenceClassification.from_pretrained(
-        "ayameRushia/bert-base-indonesian-1.5G-sentiment-analysis-smsa")
+    pipe = pipeline(
+        "text-classification",
+        model="ayameRushia/roberta-base-indonesian-1.5G-sentiment-analysis-smsa"
+    )
 
-    sentiment_analysis = pipeline(
-        "sentiment-analysis", model=model, tokenizer=tokenizer)
-
-    result = sentiment_analysis(text)
+    result = pipe(text)
     return result[0]["label"].lower()
