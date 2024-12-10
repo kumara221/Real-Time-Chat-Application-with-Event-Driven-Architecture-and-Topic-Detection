@@ -5,10 +5,18 @@ import json
 from sentiment import is_sentiment
 from const import BROKERS
 
+# Record the time before connecting to the broker
+connection_start_time = time.time()
+
 
 def on_connect(client, userdata, flags, rc):
+    # Calculate and print the connection latency
+    connection_latency = time.time() - connection_start_time
     print(f"Server connected with result code {rc}")
-    client.subscribe("chat/messages")  # Subscribe to incoming messages
+    print(f"Connection latency: {connection_latency:.4f} seconds")
+
+    # Subscribe to incoming messages
+    client.subscribe("chat/messages")
 
 
 def on_message(client, userdata, msg):
@@ -21,7 +29,6 @@ def on_message(client, userdata, msg):
         content = message_data.get("message")
         sent_time = message_data.get("sent_time")
         print(f"Received message: {content}")
-
     except json.JSONDecodeError:
         print("Error decoding the message.")
         return
@@ -41,8 +48,8 @@ def on_message(client, userdata, msg):
         print(f"Relaying message: {relayed_message}")
 
         if sentiment_result == 'negative':
-            new_message = re.sub(r'(?<=: ).+', lambda m: '*' *
-                                 len(m.group()), content)
+            new_message = re.sub(
+                r'(?<=: ).+', lambda m: '*' * len(m.group()), content)
             relayed_message = f"{new_message} | Sentiment: {sentiment_response}"
             client.publish("chat/response", relayed_message)
         else:
@@ -55,6 +62,7 @@ client.on_connect = on_connect
 client.on_message = on_message
 
 # Choose broker: "hivemq" or "mosquitto"
+# broker_choice = "hivemq"
 broker_choice = "mosquitto"
 broker = BROKERS[broker_choice]
 
