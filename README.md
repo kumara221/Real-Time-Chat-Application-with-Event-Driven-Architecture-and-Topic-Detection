@@ -1,8 +1,13 @@
-# How to run this code:
+# MQTT Topic Detection with KeyBERT
+Deteksi topik percakapan real-time menggunakan KeyBERT dan MQTT.
 
-1. Clone the repository
-2. Install the dependencies: `pip install -r requirements.txt`
-3. Run the code: `python server.py`
-4. Run the first client UI: `python client_ui_1.py`
-5. Run the second client UI: `python client_ui_2.py`
-6. Send a message from either client UI
+## Cara Menjalankan
+1. Install dependencies:
+   pip install -r requirements.txt
+   
+2. Jalankan server: 
+    python server.py
+
+3. Jalankan klien (di terminal terpisah):
+    python client_ui_1.py
+    python client_ui_2.py
