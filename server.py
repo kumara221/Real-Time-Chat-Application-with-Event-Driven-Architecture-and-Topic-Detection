@@ -40,8 +40,8 @@ class MQTTServer:
         except Exception as e:
             print(f"Error processing message: {e}")
 
-    def start(self, broker_name="emqx"):
-        broker = BROKERS.get(broker_name, BROKERS["emqx"])
+    def start(self, broker_name="bevywise"):
+        broker = BROKERS.get(broker_name, BROKERS["bevywise"])
         print(f"Menghubungkan ke broker {broker_name} ({broker['url']}:{broker['port']})...")
         self.client.connect(broker["url"], broker["port"], 60)
         self.client.loop_forever()
