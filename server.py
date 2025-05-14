@@ -1,73 +1,51 @@
 import paho.mqtt.client as mqtt
-import re
-import time
 import json
-from sentiment import is_sentiment
-from const import BROKERS
+from topic_detection import extract_topic
+from const import BROKERS, TOPICS
 
-# Record the time before connecting to the broker
-connection_start_time = time.time()
+class MQTTServer:
+    def __init__(self):
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
 
+    def on_connect(self, client, userdata, flags, rc):
+        print(f"Server connected to MQTT broker (RC: {rc})")
+        client.subscribe(TOPICS["messages"])
 
-def on_connect(client, userdata, flags, rc):
-    # Calculate and print the connection latency
-    connection_latency = time.time() - connection_start_time
-    print(f"Server connected with result code {rc}")
-    print(f"Connection latency: {connection_latency:.4f} seconds")
+    def on_message(self, client, userdata, msg):
+        try:
+            data = json.loads(msg.payload.decode())
+            sender = data["sender"]
+            message = data["message"]
+            
+            # Deteksi topik
+            topics = extract_topic(message)
+            topic_info = f"Topik dari {sender}: {', '.join(topics)}"
+            
+            # Kirim pesan asli ke semua client
+            client.publish(TOPICS["response"], json.dumps({
+                "sender": sender,
+                "message": message
+            }))
+            
+            # Kirim info topik HANYA ke client lawan
+            client.publish(TOPICS["topics"], json.dumps({
+                "target": "client_2" if sender == "client_1" else "client_1",
+                "topics": topic_info
+            }))
+            
+            print(f"Pesan diproses: {sender} -> {message} | Topik: {topics}")
+            
+        except Exception as e:
+            print(f"Error processing message: {e}")
 
-    # Subscribe to incoming messages
-    client.subscribe("chat/messages")
+    def start(self, broker_name="emqx"):
+        broker = BROKERS.get(broker_name, BROKERS["emqx"])
+        print(f"Menghubungkan ke broker {broker_name} ({broker['url']}:{broker['port']})...")
+        self.client.connect(broker["url"], broker["port"], 60)
+        self.client.loop_forever()
 
-
-def on_message(client, userdata, msg):
-    # Decode the received message
-    message = msg.payload.decode('utf-8')
-
-    # Parse the JSON message to extract the sent time and content
-    try:
-        message_data = json.loads(message)
-        content = message_data.get("message")
-        sent_time = message_data.get("sent_time")
-        print(f"Received message: {content}")
-    except json.JSONDecodeError:
-        print("Error decoding the message.")
-        return
-
-    if sent_time:
-        # Calculate the latency (time from sending to receiving the message)
-        received_time = time.time()
-        latency = received_time - sent_time
-        print(f"Latency: {latency:.4f} seconds")
-
-        # Sentiment detection logic
-        sentiment_result = is_sentiment(message)
-        sentiment_response = f"{sentiment_result.capitalize()} sentiment detected."
-
-        # Relay message along with sentiment analysis
-        relayed_message = f"{content} | Sentiment: {sentiment_response}"
-        print(f"Relaying message: {relayed_message}")
-
-        if sentiment_result == 'negative':
-            new_message = re.sub(
-                r'(?<=: ).+', lambda m: '*' * len(m.group()), content)
-            relayed_message = f"{new_message} | Sentiment: {sentiment_response}"
-            client.publish("chat/response", relayed_message)
-        else:
-            client.publish("chat/response", content)
-
-
-# Initialize MQTT client
-client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
-
-# Choose broker
-#broker_choice = "emqx"
-broker_choice = "bevywise"
-broker = BROKERS[broker_choice]
-
-# Connect to the chosen broker
-client.connect(broker["url"], broker["port"], 60)
-
-# Start the loop to listen for messages
-client.loop_forever()
+if __name__ == "__main__":
+    server = MQTTServer()
+    server.start(broker_name="bevywise")
