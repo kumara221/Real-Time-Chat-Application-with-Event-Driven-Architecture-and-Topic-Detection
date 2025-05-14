@@ -61,9 +61,9 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-# Choose broker: "hivemq" or "mosquitto"
-# broker_choice = "hivemq"
-broker_choice = "mosquitto"
+# Choose broker
+#broker_choice = "emqx"
+broker_choice = "bevywise"
 broker = BROKERS[broker_choice]
 
 # Connect to the chosen broker

@@ -1,5 +1,5 @@
 # Constants for HiveMQ and Mosquitto
 BROKERS = {
-    "hivemq": {"url": "broker.hivemq.com", "port": 1883},
-    "mosquitto": {"url": "test.mosquitto.org", "port": 1883}
+    "emqx": {"url": "broker.emqx.io", "port": 1883},
+    "bevywise": {"url": "public-mqtt-broker.bevywise.com", "port": 1883}
 }

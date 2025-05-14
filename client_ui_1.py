@@ -75,7 +75,7 @@ class MQTTClientApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    broker_choice = "mosquitto"
+    broker_choice = "bevywise"
     broker = BROKERS[broker_choice]
     app = MQTTClientApp(root, client_name="Klien 1",
                         broker=broker['url'], port=1883)
