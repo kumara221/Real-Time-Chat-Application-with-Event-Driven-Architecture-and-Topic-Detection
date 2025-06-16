@@ -10,51 +10,36 @@ class MQTTServer:
         self.client.on_message = self.on_message
 
     def on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
-            print("Server connected to MQTT broker.")
-            client.subscribe(TOPICS["messages"])
-            print(f"Subscribed to: {TOPICS['messages']}")
-        else:
-            print(f"Connection failed (RC: {rc})")
+        print(f"Server connected to MQTT broker (RC: {rc})")
+        for topik in ["kesehatan", "politik", "pendidikan"]:
+            client.subscribe(f"chat/messages/{topik}")
+            print(f"Subscribed to chat/messages/{topik}")
 
     def on_message(self, client, userdata, msg):
+        print(f"Pesan diterima: {msg.topic} - {msg.payload.decode()}")
         try:
-            payload_str = msg.payload.decode()
-            print(f"\n📥 Pesan diterima: {msg.topic} - {payload_str}")
-            data = json.loads(payload_str)
+            data = json.loads(msg.payload.decode())
+            sender = data["sender"]
+            message = data["message"]
 
-            sender = data.get("sender")
-            message = data.get("message")
+            topic_name = msg.topic.split("/")[-1]
+            topics = [topic_name]
 
-            if not sender or not message:
-                print("Payload tidak lengkap, diabaikan.")
-                return
-
-            topics = extract_topic(message)
-            print(f"Topik terdeteksi: {topics}")
-
-            if not topics:
-                print("Tidak ada topik terdeteksi, pesan tidak dikirim.")
-                return
-
-            for topic in topics:
-                topic_channel = f"topic/{topic.lower()}"
-                client.publish(topic_channel, json.dumps({
-                    "sender": sender,
-                    "message": message,
-                    "topics": topics,
-                    "processed": True
-                }))
-                print(f"Pesan dipublish ke: {topic_channel}")
-
-            print(f"Pesan selesai diproses dari {sender}.")
+            topic_channel = f"topic/{topic_name}"
+            client.publish(topic_channel, json.dumps({
+                "sender": sender,
+                "message": message,
+                "topics": topics,
+                "processed": True
+            }))
+            print(f"Pesan diproses dan dikirim ke {topic_channel}")
 
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error processing message: {e}")
 
     def start(self, broker_name="bevywise"):
         broker = BROKERS.get(broker_name, BROKERS["bevywise"])
-        print(f"🔌 Menghubungkan ke broker {broker_name} ({broker['url']}:{broker['port']})...")
+        print(f"Menghubungkan ke broker {broker_name} ({broker['url']}:{broker['port']})...")
         self.client.connect(broker["url"], broker["port"], 60)
         self.client.loop_forever()
 

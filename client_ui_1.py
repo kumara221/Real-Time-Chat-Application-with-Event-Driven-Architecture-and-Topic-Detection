@@ -56,9 +56,9 @@ class ChatClient:
 
     def on_connect(self, client, userdata, flags, rc, properties=None):
         if rc == 0:
-            topic = f"topic/{self.selected_topic.get()}"
+            topic = f"topic/{self.selected_topic.get().lower()}"
             client.subscribe(topic)
-            print(f"Terhubung ke broker. Subscribed ke topik: {topic}")
+            print(f"Terhubung ke broker. Subscribed ke topik: {topic} dan chat/response")
         else:
             print(f"Gagal terhubung, kode: {rc}")
 
@@ -91,8 +91,9 @@ class ChatClient:
                 "message": message
             }
 
-            topic = f"topic/{self.selected_topic.get()}"
+            topic = f"chat/messages/{self.selected_topic.get().lower()}"
             self.client.publish(topic, json.dumps(payload))
+
             self.message_entry.delete(0, tk.END)
 
     def add_message(self, message, is_user=False):
