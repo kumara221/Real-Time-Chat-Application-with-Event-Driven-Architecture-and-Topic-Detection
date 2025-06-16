@@ -23,11 +23,17 @@ def extract_topic(text):
 
     print("Kalimat setelah preprocessing:")
     print(preprocessed_text)
-    
-    keywords = kw_model.extract_keywords(
-        preprocessed_text,
-        keyphrase_ngram_range=(1, 1), 
-        stop_words=None,               
-        top_n=3                        
-    )
+
+    try:
+        keywords = kw_model.extract_keywords(
+            preprocessed_text,
+            keyphrase_ngram_range=(1, 1), 
+            stop_words=None,
+            top_n=3
+        )
+        print("Keywords hasil ekstraksi:", keywords)
+    except Exception as e:
+        print("Gagal mengekstrak topik:", e)
+        keywords = []
+
     return [keyword[0] for keyword in keywords]
